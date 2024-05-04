@@ -58,7 +58,7 @@ print(num_frames_to_sample)
 dataset_root_path = './dataset'
 test_dataset = pytorchvideo.data.Ucf101(
     data_path=os.path.join(dataset_root_path, "test"),
-    clip_sampler=pytorchvideo.data.make_clip_sampler("random", clip_duration),
+    clip_sampler=pytorchvideo.data.make_clip_sampler("uniform", clip_duration),
     decode_audio=False,
     transform=test_transform,
 )

@@ -18,8 +18,8 @@ def get_directories_sorted_by_name(folder_path):
 
     return directories
 
-# Specify the folder path here
-folder_path = './UCF101_subset/test'
+# Specify the folder path here for id conversions
+folder_path = './dataset/test'
 
 # Call the function and print the result
 class_labels = get_directories_sorted_by_name(folder_path)
@@ -32,9 +32,6 @@ id2label = {i: label for label, i in label2id.items()}
 
 print(f"Unique classes: {list(label2id.keys())}.")
 
-
-
-
 from transformers import VideoMAEImageProcessor, VideoMAEForVideoClassification
 
 model_ckpt = "MCG-NJU/videomae-base"
@@ -45,8 +42,6 @@ model = VideoMAEForVideoClassification.from_pretrained(
     id2label=id2label,
     ignore_mismatched_sizes=True,  # provide this in case you're planning to fine-tune an already fine-tuned checkpoint
 )
-
-
 
 
 import pytorchvideo.data
@@ -108,7 +103,7 @@ train_transform = Compose(
 dataset_root_path = './dataset'
 train_dataset = pytorchvideo.data.Ucf101(
     data_path=os.path.join(dataset_root_path, "train"),
-    clip_sampler=pytorchvideo.data.make_clip_sampler("uniform", clip_duration, backpad_last=True),
+    clip_sampler=pytorchvideo.data.make_clip_sampler("uniform", clip_duration),
     decode_audio=False,
     transform=train_transform,
 )
@@ -251,7 +246,11 @@ trainer = Trainer(
 )
 
 
+import time
 
+def timestamped_filename():
+    """Generates a filename based on the current timestamp."""
+    return time.strftime("%Y%m%d-%H%M%S")
 
 model_name = model_ckpt.split("/")[-1]
 new_model_name = timestamped_filename()
@@ -261,13 +260,5 @@ train_results = trainer.train()
 model_path = os.path.join(output_dir, 'final_model')
 model.save_pretrained(model_path)
 
-sample_test_video = next(iter(test_dataset))
 
-from transformers import pipeline
-
-video_cls = pipeline(model="BC_13:31:24_25_Apr")
-# video_cls("https://huggingface.co/datasets/sayakpaul/ucf101-subset/resolve/main/v_BasketballDunk_g14_c06.avi")
-video_cls("./dataset/train/made/0022100452-18.mp4")
-
-logits = run_inference(trained_model, sample_test_video["video"])
 
